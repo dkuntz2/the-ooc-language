@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content="pandoc" />
+  <!--<title>The ooc language - </title>-->
+  <title>The ooc language</title>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="stylesheet.css" />
+</head>
+<body>
+
+<header>
+    <h1>the OOC language</h1>
+</header>
+<nav id="TOC">
+<h1>Table of contents</h1>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#constructors">Constructors</a><ul>
+<li><a href="#reminder-member-arguments-and-assign-arguments">Reminder: member-arguments and assign-arguments</a></li>
+<li><a href="#multiple-constructors">Multiple constructors</a></li>
+<li><a href="#inheritance">Inheritance</a></li>
+<li><a href="#super-func-and-beyond">Super func (and beyond)</a></li>
+</ul></li>
+<li><a href="#when-to-use-covers-and-classes">When to use covers and classes</a><ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#by-reference-by-value">By-reference, by-value</a><ul>
+<li><a href="#classes">Classes</a></li>
+<li><a href="#covers">Covers</a></li>
+</ul></li>
+<li><a href="#heap-allocation-stack-allocation">Heap allocation, stack allocation</a><ul>
+<li><a href="#why-stack-allocation-isnt-a-silver-bullet">Why stack allocation isn't a silver bullet</a></li>
+<li><a href="#stack-and-scope">Stack and scope</a></li>
+<li><a href="#when-to-use-stack-allocation">When to use stack allocation</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#first-class-functions">First-class functions</a><ul>
+<li><a href="#intro-1">Intro</a></li>
+<li><a href="#differences-between-function-and-first-class-functions">Differences between function and first-class functions</a></li>
+<li><a href="#the-type-of-first-class-functions">The type of first-class functions</a></li>
+<li><a href="#type-inference---acs">Type inference - ACS</a></li>
+<li><a href="#other-differences---member-functions-vs-member-first-class-functions">Other differences - member functions vs member first-class functions</a></li>
+</ul></li>
+<li><a href="#generics">Generics</a><ul>
+<li><a href="#intro-2">Intro</a></li>
+<li><a href="#generic-functions-and-type-parameters">Generic functions and type parameters</a></li>
+<li><a href="#generic-type-inference">Generic type inference</a></li>
+<li><a href="#generic-return-types">Generic return types</a></li>
+<li><a href="#generic-classes">Generic classes</a></li>
+<li><a href="#advanced-type-inference">Advanced type inference</a></li>
+<li><a href="#under-the-hood">Under the hood</a></li>
+</ul></li>
+<li><a href="#properties">Properties</a><ul>
+<li><a href="#intro-3">Intro</a></li>
+<li><a href="#a-dumb-property">A dumb property</a></li>
+<li><a href="#hooking-on-get-and-set">Hooking on get and set</a></li>
+<li><a href="#virtual-properties">Virtual properties</a></li>
+<li><a href="#foreign-function-interfacing">Foreign function interfacing</a></li>
+</ul></li>
+<li><a href="#tuples">Tuples</a><ul>
+<li><a href="#intro-4">Intro</a></li>
+<li><a href="#the-problem">The problem</a><ul>
+<li><a href="#using-an-array---minmax">Using an array - minmax</a></li>
+<li><a href="#using-a-list-of-cells-ie.-a-bag">Using a list of cells (ie. a Bag)</a></li>
+<li><a href="#using-references">Using references</a></li>
+</ul></li>
+<li><a href="#multi-return-using-tuples---the-solution">Multi-return using tuples - the solution</a><ul>
+<li><a href="#multiple-return-types">Multiple return types</a></li>
+<li><a href="#retrieving-all-values---multi-variable-declaration">Retrieving all values - multi-variable declaration</a></li>
+<li><a href="#ignoring-all-but-the-first-value">Ignoring all but the first value</a></li>
+<li><a href="#ignoring-specific-values---the-_-wildcard">Ignoring specific values - the '_' wildcard ###</a></li>
+<li><a href="#the-importance-of-return-values-order">The importance of return values order</a></li>
+<li><a href="#the-_-wildcard-in-greedy-mode">The '_' wildcard in greedy mode ###</a></li>
+</ul></li>
+<li><a href="#tuples-beyond-return---multi-declaration-and-multi-assign">Tuples beyond return - multi-declaration and multi-assign</a></li>
+</ul></li>
+<li><a href="#version-blocks">Version blocks</a><ul>
+<li><a href="#syntax">Syntax</a></li>
+<li><a href="#semantics">Semantics</a></li>
+<li><a href="#built-in-version-names">Built-in version names</a></li>
+<li><a href="#custom-version-names">Custom version names</a></li>
+<li><a href="#semantics-continued">Semantics continued</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#pattern-for-os-specific-classes">Pattern for OS-specific classes</a></li>
+</ul></li>
+<li><a href="#use-files">Use files</a><ul>
+<li><a href="#intro-5">Intro</a></li>
+<li><a href="#libs-search-path">Libs search path</a></li>
+<li><a href="#syntax-1">Syntax</a></li>
+<li><a href="#versioning">Versioning</a></li>
+<li><a href="#top-level-directives">Top-level directives</a></li>
+<li><a href="#basic-directives">Basic directives</a></li>
+<li><a href="#pkg-config-packages">pkg-config packages</a></li>
+<li><a href="#pkg-config-like-utilities">pkg-config-like utilities</a></li>
+<li><a href="#custom-linkers">Custom linkers</a></li>
+<li><a href="#osx-specific-directives">OSX-specific directives</a></li>
+<li><a href="#android-specific-directives">Android-specific directives</a></li>
+</ul></li>
+</ul>
+</nav>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p><em>Coming soon, hopefully.</em></p>
+</section>
+<section id="constructors" class="level1">
+<h1>Constructors</h1>
+<p>In ooc, unlike Java/Scala/C++/C#, 'new' isn't a keyword, but a static method.</p>
+<p>For example:</p>
+<div class="highlight">
+<pre>    <span class="nv">dog</span> <span class="o">:=</span> <span class="nc">Dog</span> <span class="k">new</span><span class="p">(</span><span class="s2">&quot;Pif&quot;</span><span class="p">)</span>
+</pre>
+</div>
+<p>However it's uncommon to directly define a new method. Instead, an init method is defined, like this:</p>
+<div class="highlight">
+<pre>    <span class="nc">Dog</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+
+        <span class="nv">name</span><span class="p">:</span> <span class="nc">String</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">name</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="p">}</span>
+</pre>
+</div>
+<p>When an 'init' method is defined, a corresponding 'new' static method is defined, in our case, the code above is equivalent to:</p>
+<div class="highlight">
+<pre>    <span class="nc">Dog</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+
+        <span class="nv">name</span><span class="p">:</span> <span class="nc">String</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span> <span class="nv">name</span> <span class="o">=</span> <span class="nv">name</span>
+        <span class="p">}</span>
+
+        <span class="k">new</span><span class="p">:</span> <span class="k">static</span> <span class="k">func</span> <span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">This</span> <span class="p">{</span>
+            <span class="k">this</span> <span class="o">:=</span> <span class="nc">This</span> <span class="nf">alloc</span><span class="p">()</span> <span class="k">as</span> <span class="nc">This</span>
+            <span class="k">this</span> <span class="nf">init</span><span class="p">()</span>
+            <span class="k">this</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+</pre>
+</div>
+<p>'alloc' is a method of Class, which can be defined like this, for example:</p>
+<div class="highlight">
+<pre>    <span class="c">/// Create a new instance of the object of type defined by this class</span>
+    <span class="nv">alloc</span><span class="p">:</span> <span class="k">final</span> <span class="k">func</span> <span class="nf">~_class</span> <span class="o">-&gt;</span> <span class="nc">Object</span> <span class="p">{</span>
+        <span class="nv">object</span> <span class="o">:=</span> <span class="nf">gc_malloc</span><span class="p">(</span><span class="nv">instanceSize</span><span class="p">)</span> <span class="k">as</span> <span class="nc">Object</span>
+        <span class="k">if</span><span class="p">(</span><span class="nv">object</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">object</span> <span class="k">class</span> <span class="o">=</span> <span class="k">this</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">object</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>In ooc implementations, Object and Class are often classes defined in .ooc source files, so you can easily study their source code. You can typically find their definitions in sdk/lang/ (because everything in the lang/ package is automatically imported)</p>
+<section id="reminder-member-arguments-and-assign-arguments" class="level2">
+<h2>Reminder: member-arguments and assign-arguments</h2>
+<p>This:</p>
+<div class="highlight">
+<pre>    <span class="nc">DiceRoll</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">value</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>is the equivalent of this:</p>
+<div class="highlight">
+<pre>    <span class="nc">DiceRoll</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">.</span><span class="nf">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span> <span class="nv">value</span> <span class="o">=</span> <span class="nv">value</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>which is the equivalent of this:</p>
+<div class="highlight">
+<pre>    <span class="nc">DiceRoll</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span> <span class="nv">value</span> <span class="o">=</span> <span class="nv">value</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Ie '.' allows 'value's type to be inferred from the member variable of the same name, and '=' does the same plus assigns it in the constructor.</p>
+<p>This works for any method, not only for constructors. However, if you're using it for setters, you probably want to use properties instead.</p>
+</section>
+<section id="multiple-constructors" class="level2">
+<h2>Multiple constructors</h2>
+<p>As any method, constructors can be overloaded with suffixes.</p>
+<p>Suffixes may seem annoying at first, seen as a sort of 'manual name mangling', but aside from helping to debug, they're also a way to document the purpose of your different constructors. For that reason, it's always a good idea to give meaningful suffixes that lets one hint the reason for existence of a constructor.</p>
+<p>From a constructor, you can call another constructor with init(), just like a regular method.</p>
+<p>You can also call a super-constructor with super()</p>
+<div class="highlight">
+<pre>    <span class="nc">Dog</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+
+        <span class="nv">name</span><span class="p">:</span> <span class="nc">String</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="nf">~defaultName</span> <span class="p">{</span>
+            <span class="nf">init</span><span class="p">(</span><span class="s2">&quot;The Man&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">name</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="p">}</span>
+</pre>
+</div>
+</section>
+<section id="inheritance" class="level2">
+<h2>Inheritance</h2>
+<p>A common mistake is to think that constructor are inherited, because they are standard methods. However, this behavior would be harmful, as explained in the following example:</p>
+<div class="highlight">
+<pre>    <span class="nc">Logger</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">prefix</span><span class="p">:</span> <span class="nc">String</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">prefix</span><span class="p">)</span> <span class="p">{}</span>
+
+        <span class="nv">log</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">msg</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+            <span class="s2">&quot;%s%s&quot;</span> <span class="nf">printfln</span><span class="p">(</span><span class="nv">prefix</span><span class="p">,</span> <span class="nv">msg</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nc">FileLogger</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">Logger</span> <span class="p">{</span>
+        <span class="nv">output</span><span class="p">:</span> <span class="nc">FileWriter</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="nf">~withPath</span> <span class="p">(</span><span class="nv">path</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">super</span><span class="p">(</span><span class="nv">prefix</span><span class="p">)</span>
+            <span class="nv">output</span> <span class="o">=</span> <span class="nc">FileWriter</span> <span class="k">new</span><span class="p">(</span><span class="nv">path</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="nv">log</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">msg</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">output</span> <span class="nf">write</span><span class="p">(</span><span class="nv">prefix</span><span class="p">)</span><span class="o">.</span> <span class="nf">write</span><span class="p">(</span><span class="nv">msg</span><span class="p">)</span><span class="o">.</span> <span class="nf">write</span><span class="p">(</span><span class="sc">&#39;\n&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>What would happen if the first constructor defined in Logger was available for FileLogger? Let's find out</p>
+<div class="highlight">
+<pre>    <span class="nv">warn</span> <span class="o">:=</span> <span class="nc">FileLogger</span> <span class="k">new</span><span class="p">(</span><span class="s2">&quot;WARN&quot;</span><span class="p">)</span>
+    <span class="nv">warn</span> <span class="nf">log</span><span class="p">(</span><span class="s2">&quot;Somebody set us up the stacktrace&quot;</span><span class="p">)</span>
+</pre>
+</div>
+<p>The constructor call, if it was valid, would either return a Logger, which is not what we want, or by some miracle trick, return a FileLogger - but one that wouldn't be properly initialized, so that log() would crash.</p>
+</section>
+<section id="super-func-and-beyond" class="level2">
+<h2>Super func (and beyond)</h2>
+<p>However, there are times when one truly wants to relay a constructor in an inherited class, such as:</p>
+<div class="highlight">
+<pre>    <span class="nc">Expression</span><span class="p">:</span> <span class="k">abstract</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">eval</span><span class="p">:</span> <span class="k">abstract</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">Int</span>
+    <span class="p">}</span>
+
+    <span class="nc">BinaryOp</span><span class="p">:</span> <span class="k">abstract</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">Expression</span> <span class="p">{</span>
+        <span class="nv">left</span><span class="p">,</span> <span class="nv">right</span><span class="p">:</span> <span class="nc">Expression</span>
+
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="nf">~lr</span> <span class="p">(</span><span class="o">=</span><span class="nv">left</span><span class="p">,</span> <span class="o">=</span><span class="nv">right</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+
+    <span class="nc">Add</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">BinaryOp</span> <span class="p">{</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="nf">~lr</span> <span class="p">(</span><span class="o">=</span><span class="nv">left</span><span class="p">,</span> <span class="o">=</span><span class="nv">right</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Repeating the 'init~lr' definition in Add violates the Don't Repeat Yourself (DRY) principle. Besides, if functionality is added to the base BinaryOp init~lr, it wouldn't be replicated in Add init~lr.</p>
+<p>For this precise case, the 'super func' construct exists:</p>
+<div class="highlight">
+<pre>    <span class="nc">Add</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">BinaryOp</span> <span class="p">{</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">super</span> <span class="k">func</span> <span class="nf">~lr</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>This behaves exactly as if we had written:</p>
+<div class="highlight">
+<pre>    <span class="nc">Add</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">BinaryOp</span> <span class="p">{</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="nf">~lr</span> <span class="p">(</span><span class="o">.</span><span class="nf">left</span><span class="p">,</span> <span class="o">.</span><span class="nf">right</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">super</span><span class="p">(</span><span class="nv">left</span><span class="p">,</span> <span class="nv">right</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+</section>
+</section>
+<section id="when-to-use-covers-and-classes" class="level1">
+<h1>When to use covers and classes</h1>
+<section id="intro" class="level2">
+<h2>Intro</h2>
+<p>Whenever possible, use classes.</p>
+<p>If you're new to ooc, don't use covers because you've heard they are &quot;faster&quot;. Covers are powerful. Great power comes with great responsibility. The sword cut both ways</p>
+</section>
+<section id="by-reference-by-value" class="level2">
+<h2>By-reference, by-value</h2>
+<section id="classes" class="level3">
+<h3>Classes</h3>
+<p>Classes are by-references. Which means every object is a reference. Doing that:</p>
+<div class="highlight">
+<pre>    <span class="nc">Number</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">value</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+
+    <span class="nv">modifyRef</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">n</span><span class="p">:</span> <span class="nc">Number</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">n</span> <span class="o">=</span> <span class="nc">Number</span> <span class="k">new</span><span class="p">(</span><span class="o">-</span><span class="m-Decimal">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nv">modifyInside</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">n</span><span class="p">:</span> <span class="nc">Number</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">n</span> <span class="nv">value</span> <span class="o">=</span> <span class="o">-</span><span class="m-Decimal">1</span>
+    <span class="p">}</span>
+
+    <span class="nv">answer</span> <span class="o">:=</span> <span class="nc">Number</span> <span class="k">new</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+    <span class="nf">modifyRef</span><span class="p">(</span><span class="nv">answer</span><span class="p">)</span> <span class="c">// does nothing</span>
+    <span class="nf">modifyInside</span><span class="p">(</span><span class="nv">answer</span><span class="p">)</span>
+</pre>
+</div>
+<p>What happens in 'modifyRef' is that we change the value of the parameter 'n'. The code does not modify what 'n' was a reference to in the first place. In the example above the variable 'answer' is given as the argument and 'modifyRef' has no effect at all on 'answer'.</p>
+<p>However, in 'modifyInside', we actually modify the content of what 'n' refers to. Since 'n' refers to 'answer', the code will modify its member 'value' and set it to -1.</p>
+</section>
+<section id="covers" class="level3">
+<h3>Covers</h3>
+<p>Covers are trickier. There are two types of covers: primitive covers and compound covers</p>
+<p>Primitive covers allow to us to add methods to an existing underlying type. For implementations of ooc on top of C this means you can do stuff like:</p>
+<div class="highlight">
+<pre>    <span class="nc">Int</span><span class="p">:</span> <span class="k">cover</span> <span class="k">from</span> <span class="nc">int</span>
+</pre>
+</div>
+<p>This is actually the way all C types are used within ooc.</p>
+<p>As a consequence, covers are by-value. Which means that</p>
+<div class="highlight">
+<pre>    <span class="nv">modify</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">i</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">i</span> <span class="o">=</span> <span class="o">-</span><span class="m-Decimal">1</span>
+    <span class="p">}</span>
+
+    <span class="nv">answer</span> <span class="o">:=</span> <span class="m-Decimal">42</span>
+    <span class="nf">modify</span><span class="p">(</span><span class="nv">answer</span><span class="p">)</span>
+</pre>
+</div>
+<p>Doesn't modify answer.</p>
+<p>But compound covers (you can think of them as structs) are also by value, which means that:</p>
+<div class="highlight">
+<pre>    <span class="nc">Number</span><span class="p">:</span> <span class="nv">cover</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+    <span class="p">}</span>
+
+    <span class="nv">modifyInside</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">n</span><span class="p">:</span> <span class="nc">Number</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">n</span> <span class="nv">value</span> <span class="o">=</span> <span class="o">-</span><span class="m-Decimal">1</span>
+    <span class="p">}</span>
+
+    <span class="nv">answer</span><span class="p">:</span> <span class="nc">Number</span>
+    <span class="nv">answer</span> <span class="nv">value</span> <span class="o">=</span> <span class="m-Decimal">42</span>
+
+    <span class="nf">modifyInside</span><span class="p">(</span><span class="nv">answer</span><span class="p">)</span>
+</pre>
+</div>
+<p>Won't modify 'answer' at all, but a <em>copy</em> of it that has been passed to 'modifyInside'.</p>
+<p>As an interesting side effect, a 'clone' method is futile for covers.</p>
+<p>It also means that this won't work:</p>
+<div class="highlight">
+<pre>    <span class="nc">Number</span><span class="p">:</span> <span class="nv">cover</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">value</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Because init will be working on a <em>copy</em> of the object, thus leaving the original object unmodified. That's why func@ exists, ie.:</p>
+<div class="highlight">
+<pre>    <span class="nc">Number</span><span class="p">:</span> <span class="nv">cover</span> <span class="p">{</span>
+        <span class="nv">value</span><span class="p">:</span> <span class="nc">Int</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span><span class="p">@</span> <span class="p">(</span><span class="o">=</span><span class="nv">value</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Where 'this' will be passed by reference. Same goes for any cover method that modifies its content.</p>
+</section>
+</section>
+<section id="heap-allocation-stack-allocation" class="level2">
+<h2>Heap allocation, stack allocation</h2>
+<p>When you do</p>
+<div class="highlight">
+<pre>    <span class="nc">NumberClass</span><span class="p">:</span> <span class="k">class</span> <span class="p">{}</span>
+    <span class="nv">n</span> <span class="o">:=</span> <span class="nc">NumberClass</span> <span class="k">new</span><span class="p">()</span>
+</pre>
+</div>
+<p>n may be allocated on the heap or on the stack, however the compiler sees fit.</p>
+<p>However, with:</p>
+<div class="highlight">
+<pre>    <span class="nc">NumberCover</span><span class="p">:</span> <span class="nv">cover</span> <span class="p">{}</span>
+    <span class="nv">n</span><span class="p">:</span> <span class="nc">NumberCover</span>
+</pre>
+</div>
+<p>n is allocated on the stack.</p>
+<p>Choosing whether to allocate an object on the stack or on the heap is a non-trivial decision. In C++ for example, it is the role of the programmer to decide whether to allocate on the stack or on the heap.</p>
+<p>In ooc, it's the role of the compiler. Until the language is properly standardized and annotations are added for extern functions to allow escape analysis, the compiler may choose to only allocate on the heap.</p>
+<p>Allocating on the stack is much faster (since it only involves moving the stack pointer), and the stack is always hot, the memory you get when allocating is much more likely to be in cache than any far heap allocated memory.</p>
+<p>So why don't we always allocate on the stack? Why do we even bother about heap allocation, which involves all kinds of housekeeping to know which memory blocks are reserved and which are free?</p>
+<section id="why-stack-allocation-isnt-a-silver-bullet" class="level3">
+<h3>Why stack allocation isn't a silver bullet</h3>
+<p>A typical stack size for C programs on desktop OSes is between 1MB and 2MB. Therefore, if you need to allocate big objects, you may run out of stack space.</p>
+<p>Running out of stack space is really something to be avoided. It's a lot harder to debug than heap allocation failures. When heap allocation fails, you usually get back a null pointer, and tools (GDB, Valgrind) help figuring out the cause.</p>
+<p>However, when you run out of stack space, the program usually crashes violently with very little information about the situation that lead to the crash. Even worse, it could corrupt data without crashing.</p>
+<p>What's more, often, when a program crashes because of a stack allocation failure, the call stack is overwritten with random data, making it impossible to trace back the origin of the problem.</p>
+<p>To add insult to injury, as far as I know, there is no reliable and portable way to know how much free memory is left on the stack.</p>
+<p>For all those reasons, stack allocation is sometimes entirely avoided, because it's tricky to deal with manually.</p>
+<p>The following IBM DeveloperWorks article goes more in-depth into the issue: <a href="http://www.ibm.com/developerworks/java/library/j-jtp09275.html" class="uri">http://www.ibm.com/developerworks/java/library/j-jtp09275.html</a></p>
+</section>
+<section id="stack-and-scope" class="level3">
+<h3>Stack and scope</h3>
+<p>But wait, there's more! (assuming you're still reading at that point)</p>
+<p>Stack-allocated variables are deallocated when they go out of scope.</p>
+<p>What does that mean? It means that this code is wrong.</p>
+<div class="highlight">
+<pre>    <span class="nv">getAnswer</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">Int*</span> <span class="p">{</span>
+        <span class="c">// answer is allocated on the stack</span>
+        <span class="nv">answer</span> <span class="o">:=</span> <span class="m-Decimal">42</span>
+        <span class="c">// we&#39;re returning the address of a local variable</span>
+        <span class="c">// this is WRONG, don&#39;t do it.</span>
+        <span class="nv">answer</span><span class="o">&amp;</span>
+        <span class="c">// when the function returns, &#39;answer&#39; goes out of scope</span>
+        <span class="c">// and is deallocated</span>
+    <span class="p">}</span>
+
+    <span class="nv">answerPtr</span> <span class="o">:=</span> <span class="nf">getAnswer</span><span class="p">()</span>
+    <span class="s2">&quot;answer = %d&quot;</span> <span class="nf">printfln</span><span class="p">(</span><span class="nv">answerPtr</span><span class="p">@)</span>
+</pre>
+</div>
+<p>Whereas this one will work perfectly:</p>
+<div class="highlight">
+<pre>    <span class="nv">getAnswer</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">Int*</span> <span class="p">{</span>
+        <span class="c">// answer is allocated on the heap</span>
+        <span class="nv">answer</span> <span class="o">:=</span> <span class="nf">gc_malloc</span><span class="p">(</span><span class="nc">Int</span> <span class="nv">size</span><span class="p">)</span>
+        <span class="nv">answer</span><span class="p">@</span> <span class="o">=</span> <span class="m-Decimal">42</span>
+        <span class="c">// we&#39;re returning the address of a heap-allocated variable</span>
+        <span class="c">// no problem with that. the memory will be freed on a garbage</span>
+        <span class="c">// collector sweep phase, when it will have detected that</span>
+        <span class="c">// it&#39;s unused</span>
+        <span class="nv">answer</span>
+    <span class="p">}</span>
+
+    <span class="nv">answerPtr</span> <span class="o">:=</span> <span class="nf">getAnswer</span><span class="p">()</span>
+    <span class="s2">&quot;answer = %d&quot;</span> <span class="nf">printfln</span><span class="p">(</span><span class="nv">answerPtr</span><span class="p">@)</span>
+</pre>
+</div>
+<p>However, the first version (returning the address of a local variable) might work sometimes: don't be surprised. If the memory address (on the stack or in a register) where the local variable was stored isn't overwritten between the return from the function and the time when it's used, it might still contain the original value. But, again - it's wrong and unreliable.</p>
+</section>
+<section id="when-to-use-stack-allocation" class="level3">
+<h3>When to use stack allocation</h3>
+<p>For small objects for which you need by-value behavior and of which you use gazillions in your application.</p>
+<p>Each project is a unique situation - as a rule, I'd always advise to begin with a class, and turn it into a cover later if the situation requires it.</p>
+<p>However, keep in mind that allocation is often not the first place to look if you want to optimize your application. Remember to always use a profiler (I find that valgrind + KCachegrind work particularly well with ooc code) to figure out where the hotspots are in your code.</p>
+</section>
+</section>
+</section>
+<section id="first-class-functions" class="level1">
+<h1>First-class functions</h1>
+<section id="intro-1" class="level2">
+<h2>Intro</h2>
+<p>Functions are pieces of code that can take arguments, and return values.</p>
+<p>Named functions are declared with this syntax:</p>
+<div class="highlight">
+<pre>    <span class="o">&lt;</span><span class="nv">name</span><span class="o">&gt;</span> <span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nv">arguments</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="k">return</span> <span class="nv">type</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Where arguments are comma-separated, enclosed between parenthesis, and return type is prefixed with a right arrow -&gt;.</p>
+<p>Arguments may be omitted if the function doesn't take any, and return type may be omitted too, if the function is void.</p>
+<p>Example:</p>
+<div class="highlight">
+<pre>    <span class="nv">max</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nv">a</span> <span class="o">&gt;</span> <span class="nv">b</span> <span class="o">?</span> <span class="nv">a</span> <span class="p">:</span> <span class="nv">b</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>But this is a valid expression too:</p>
+<div class="highlight">
+<pre>    <span class="k">func</span> <span class="o">&lt;</span><span class="nv">arguments</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="k">return</span> <span class="nv">type</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>And with decl-assign, we can declare a variable named 'max', equal to this expression. And then use it very much like a function</p>
+<div class="highlight">
+<pre>    <span class="nv">max</span> <span class="o">:=</span> <span class="k">func</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nv">a</span> <span class="o">&gt;</span> <span class="nv">b</span> <span class="o">?</span> <span class="nv">a</span> <span class="p">:</span> <span class="nv">b</span>
+    <span class="p">}</span>
+    <span class="nv">answer</span> <span class="o">:=</span> <span class="nf">max</span><span class="p">(</span><span class="o">-</span><span class="m-Decimal">1</span><span class="p">,</span> <span class="m-Decimal">42</span><span class="p">)</span>
+</pre>
+</div>
+</section>
+<section id="differences-between-function-and-first-class-functions" class="level2">
+<h2>Differences between function and first-class functions</h2>
+<p>The first difference is: functions are immutable. First-class functions are variables, and thus can be overwritten by simple assignment.</p>
+<div class="highlight">
+<pre>    <span class="c">// this is invalid: don&#39;t do that.</span>
+    <span class="nv">someFunc</span><span class="p">:</span> <span class="k">func</span> <span class="p">{}</span>
+    <span class="nv">someFunc</span> <span class="o">=</span> <span class="nv">someOtherFunc</span>
+
+    <span class="c">// this, on the other hand, is valid</span>
+    <span class="nv">someFunc</span> <span class="o">:=</span> <span class="k">func</span> <span class="p">{}</span>
+    <span class="nv">someFunc</span> <span class="o">=</span> <span class="nv">someOtherFunc</span>
+</pre>
+</div>
+<p>The second difference is: first-class functions can capture context. Closures are first-class functions that capture context.</p>
+<div class="highlight">
+<pre>    <span class="c">// here&#39;s a normal function</span>
+    <span class="nv">clone</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">l</span><span class="p">:</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nv">copy</span> <span class="o">:=</span> <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span> <span class="k">new</span><span class="p">(</span><span class="nv">l</span> <span class="nf">size</span><span class="p">())</span>
+        <span class="nv">l</span> <span class="nf">each</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="nv">element</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">copy</span> <span class="nf">add</span><span class="p">(</span><span class="nv">element</span><span class="p">)</span>
+        <span class="p">})</span>
+        <span class="nv">copy</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Here, our anonymous, first-class function which also happens to be a closure, is</p>
+<div class="highlight">
+<pre>    <span class="k">func</span><span class="p">(</span><span class="nv">element</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">copy</span> <span class="nf">add</span><span class="p">(</span><span class="nv">element</span><span class="p">)</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>It captures the context because we access 'copy' in it - which isn't an argument of the function, nor a variable declared inside the function.</p>
+<p>It's declared outside, and still we can access it - that's what capturing context is.</p>
+<p>So let's sum up: first-class functions may be overwritten by assignment, and may capture context.</p>
+</section>
+<section id="the-type-of-first-class-functions" class="level2">
+<h2>The type of first-class functions</h2>
+<p>So, when we do:</p>
+<div class="highlight">
+<pre>    <span class="nv">max</span> <span class="o">:=</span> <span class="k">func</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nv">a</span> <span class="o">&gt;</span> <span class="nv">b</span> <span class="o">?</span> <span class="nv">a</span> <span class="p">:</span> <span class="nv">b</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>What exactly is the type of 'max' ?</p>
+<p>Let's declare it in two steps instead:</p>
+<div class="highlight">
+<pre>    <span class="nv">max</span> <span class="p">:</span> <span class="nc">Func</span> <span class="p">(</span><span class="nc">Int</span><span class="p">,</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int</span>
+    <span class="nv">max</span> <span class="o">=</span> <span class="k">func</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nv">a</span> <span class="o">&gt;</span> <span class="nv">b</span> <span class="o">?</span> <span class="nv">a</span> <span class="p">:</span> <span class="nv">b</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p><code>Func</code> is a type that has a special syntax:</p>
+<div class="highlight">
+<pre>    <span class="nc">Func</span> <span class="o">&lt;</span><span class="nv">argument</span> <span class="nv">types</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="k">return</span> <span class="nv">type</span><span class="o">&gt;</span>
+</pre>
+</div>
+<p>As with regular functions declaration, both argument types and return types can be omitted.</p>
+</section>
+<section id="type-inference---acs" class="level2">
+<h2>Type inference - ACS</h2>
+<p>Declaring the type of first-class functions is mostly useful in function arguments.</p>
+<p>For example, in the SDK, the declaration of each goes like this:</p>
+<div class="highlight">
+<pre>    <span class="nc">List</span><span class="p">:</span> <span class="k">class</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nv">each</span><span class="p">:</span> <span class="k">func</span><span class="p">(</span><span class="nv">f</span><span class="p">:</span> <span class="nc">Func</span> <span class="p">(</span><span class="nc">T</span><span class="p">))</span> <span class="p">{</span>
+            <span class="c">// ...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>So it takes a function that takes one argument of type T</p>
+<p>Hence, clearly doing that in our clone function above:</p>
+<div class="highlight">
+<pre>    <span class="nv">l</span> <span class="nf">each</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="nv">element</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">copy</span> <span class="nf">add</span><span class="p">(</span><span class="nv">element</span><span class="p">)</span>
+    <span class="p">})</span>
+</pre>
+</div>
+<p>Is unnecessary. Since we know that l is a List<Int>, and that each takes a Func (T) then we know that element is of type Int.</p>
+<p>And thus, we can write that:</p>
+<div class="highlight">
+<pre>    <span class="nv">l</span> <span class="nf">each</span><span class="p">(</span><span class="o">|</span><span class="nv">element</span><span class="o">|</span>
+        <span class="nv">copy</span> <span class="nf">add</span><span class="p">(</span><span class="nv">elements</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre>
+</div>
+<p>The proper syntax for that is</p>
+<div class="highlight">
+<pre>    <span class="nf">call</span><span class="p">(</span><span class="o">|&lt;</span><span class="nv">name</span> <span class="nv">of</span> <span class="nv">arguments</span><span class="o">&gt;|</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">)</span>
+</pre>
+</div>
+<p>If there are no arguments, this is valid:</p>
+<div class="highlight">
+<pre>    <span class="nf">call</span><span class="p">(</span><span class="o">||</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">)</span>
+</pre>
+</div>
+<p>And is then equivalent to:</p>
+<div class="highlight">
+<pre>    <span class="nf">call</span><span class="p">(</span><span class="k">func</span> <span class="p">{</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">})</span>
+</pre>
+</div>
+<p>The return type is inferred as well.</p>
+</section>
+<section id="other-differences---member-functions-vs-member-first-class-functions" class="level2">
+<h2>Other differences - member functions vs member first-class functions</h2>
+<div class="highlight">
+<pre>    <span class="nc">Dog</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+
+        <span class="nv">shout</span><span class="p">:</span> <span class="k">func</span> <span class="p">{</span>
+            <span class="s2">&quot;Woof woof&quot;</span> <span class="nf">println</span><span class="p">()</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+    <span class="nv">d</span> <span class="o">:=</span> <span class="nc">Dog</span> <span class="k">new</span><span class="p">()</span>
+    <span class="nv">d</span> <span class="nf">shout</span><span class="p">()</span>
+
+    <span class="nc">Dog</span> <span class="nv">shout</span> <span class="o">=</span> <span class="k">func</span> <span class="p">{</span>
+        <span class="s2">&quot;Ruff ruff&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="nv">d2</span> <span class="o">:=</span> <span class="nc">Dog</span> <span class="k">new</span><span class="p">()</span>
+    <span class="nv">d</span> <span class="nf">shout</span><span class="p">()</span>
+    <span class="nv">d2</span> <span class="nf">shout</span><span class="p">()</span>
+</pre>
+</div>
+<p>Prints:</p>
+<div class="highlight">
+<pre>    <span class="nc">Woof</span> <span class="nv">woof</span>
+    <span class="nc">Ruff</span> <span class="nv">ruff</span>
+    <span class="nc">Ruff</span> <span class="nv">ruff</span>
+</pre>
+</div>
+<p>When assigning 'Dog shout', we change the member method of <em>all</em> past and future Dog instances. This happens because 'shout' is actually stored in the meta-class</p>
+<p>Consider the differences with that instead:</p>
+<div class="highlight">
+<pre>    <span class="nc">Dog</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+
+        <span class="nv">shout</span> <span class="o">:=</span> <span class="k">func</span> <span class="p">{</span>
+            <span class="s2">&quot;Woof woof&quot;</span> <span class="nf">println</span><span class="p">()</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+    <span class="nv">d</span> <span class="o">:=</span> <span class="nc">Dog</span> <span class="k">new</span><span class="p">()</span>
+    <span class="nv">d</span> <span class="nf">shout</span><span class="p">()</span>
+
+    <span class="nv">d</span> <span class="nv">shout</span> <span class="o">=</span> <span class="k">func</span> <span class="p">{</span>
+        <span class="s2">&quot;Ruff ruff&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="nv">d2</span> <span class="o">:=</span> <span class="nc">Dog</span> <span class="k">new</span><span class="p">()</span>
+    <span class="nv">d</span> <span class="nf">shout</span><span class="p">()</span>
+    <span class="nv">d2</span> <span class="nf">shout</span><span class="p">()</span>
+</pre>
+</div>
+<p>Prints:</p>
+<div class="highlight">
+<pre>    <span class="nc">Woof</span> <span class="nv">woof</span>
+    <span class="nc">Ruff</span> <span class="nv">ruff</span>
+    <span class="nc">Woof</span> <span class="nv">woof</span>
+</pre>
+</div>
+<p>Here, 'shout' is a member variable. Assigning to 'd shout' changes it only for that instance, so d2 shout isn't changed.</p>
+</section>
+</section>
+<section id="generics" class="level1">
+<h1>Generics</h1>
+<section id="intro-2" class="level2">
+<h2>Intro</h2>
+<p>Generics are one of the most commonly misunderstood features of ooc.</p>
+<p>Many people attempt confuse them with templates (like in C++ or D) and are surprised when things like this don't work:</p>
+<div class="highlight">
+<pre>    <span class="nc">Vector2</span><span class="p">:</span> <span class="k">class</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="nc">T</span>
+    <span class="nv">init</span><span class="p">:</span> <span class="k">func</span><span class="p">(</span><span class="o">=</span><span class="nv">x</span><span class="p">,</span> <span class="o">=</span><span class="nv">y</span><span class="p">)</span> <span class="p">{}</span>
+        <span class="nv">add</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">r</span><span class="p">:</span> <span class="nc">This</span><span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">new</span><span class="p">(</span><span class="nv">x</span> <span class="o">+</span> <span class="nv">r</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">y</span> <span class="o">+</span> <span class="nv">r</span> <span class="nv">y</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>(Don't worry about the syntax for now, I'll get to it later)</p>
+<p>Why doesn't this work? It's because you can't do much with generic variables. The whole point is that <em>we don't know which type they are</em> until we run the program.</p>
+<p>One might instanciate a Vector2&lt;Int&gt; - in which case the + operator makes sense - but they could also instanciate a Vector2&lt;Carrot&gt;, where Carrot wouldn't necessarily have a + operator.</p>
+<p>Besides, since ooc is statically typed, we wouldn't know which + operator to use - they're not all the same! We don't add two ints the same manner that we add two floats, and so on.</p>
+</section>
+<section id="generic-functions-and-type-parameters" class="level2">
+<h2>Generic functions and type parameters</h2>
+<p>So, if we can't use any operator on generic variables - nor can we call methods on them, then what are they good for? Sure looks useless from here.</p>
+<p>Well, here's one thing we can do, for example:</p>
+<div class="highlight">
+<pre>    <span class="nv">identity</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">val</span><span class="p">:</span> <span class="nc">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">T</span> <span class="p">{</span>
+        <span class="nv">val</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Woha. What just happened here? Let's recap line by line.</p>
+<div class="highlight">
+<pre>    <span class="nv">identity</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">val</span><span class="p">:</span> <span class="nc">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">T</span>
+</pre>
+</div>
+<p>Here, we declare a function named 'identity', with one type parameter named T, taking one parameter named 'val', and returning a value of type T.</p>
+<p>Type parameters are the names listed between the angular brackets &lt; and &gt;. You can have as many as you want (although if you have more than few of them, you're probably doing it wrong)</p>
+<p>When you declare a type parameter, it tells the compiler about a new type, that we know nothing about at compile-time. Well, not nothing. Remember classes? Here's how we access the class of an object:</p>
+<div class="highlight">
+<pre>    <span class="nv">object</span> <span class="k">class</span>
+</pre>
+</div>
+<p>And if object was of type Carrot, that amounts exactly to doing just:</p>
+<div class="highlight">
+<pre>    <span class="nc">Carrot</span>
+</pre>
+</div>
+<p>What is that, exactly? It's an access to a class. What is a class? An instance of Class, which is declared in lang/CoreTypes.ooc If you actually go on and open CoreTypes, here is a simplified version of what you will find:</p>
+<div class="highlight">
+<pre>    <span class="nc">Class</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">name</span><span class="p">:</span> <span class="nc">String</span>
+        <span class="nv">size</span><span class="p">,</span> <span class="nv">instanceSize</span><span class="p">:</span> <span class="nc">SizeT</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>(Reminder: SizeT can be used to store the size of something. On 32-bits platforms, it's 32-bits wide. On 64-bits platforms, it's 64-bits wide, and so on. Basically, it's an integer type that is as wide as a Pointer)</p>
+<p>So back to our generic stuff. I said we knew nothing about generic types. And in fact, it was a downright lie. Please accept my apologies. The reality is - we know all that matters! If you try to execute the following piece of code:</p>
+<div class="highlight">
+<pre>    <span class="nv">test</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">t</span><span class="p">:</span> <span class="nc">T</span><span class="p">)</span> <span class="p">{</span> <span class="nc">T</span> <span class="k">class</span> <span class="nv">name</span> <span class="nf">println</span><span class="p">()</span> <span class="p">}</span>
+    <span class="nf">test</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+</pre>
+</div>
+<p>You'll find out something very strange and puzzling.. it prints &quot;Class&quot; !</p>
+<p>We just discovered that we can access type parameters just like any other variable. And since T is a class, and we can access various fields of a class, here's what we can do:</p>
+<div class="highlight">
+<pre>    <span class="nv">test2</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">t</span><span class="p">:</span> <span class="nc">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;name = %s, size = %zd, instanceSize = %zd&quot;</span> <span class="nf">printfln</span><span class="p">(</span>
+        <span class="nc">T</span> <span class="nv">name</span><span class="p">,</span> <span class="nc">T</span> <span class="nv">size</span><span class="p">,</span> <span class="nc">T</span> <span class="nv">instanceSize</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nf">test2</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+</pre>
+</div>
+<p>This will likely print something like &quot;name = Int, size = 4, instanceSize = 4&quot;.</p>
+<p>Then you must wonder why is there 'size' and 'instanceSize', if they're equal? Well, they're not equal in all cases. Most importantly, for objects (which are references, remember), 'object class size' is equal to 'Pointer size', but 'object class instanceSize' is equal to the actual number of bytes we should allocate when we create an object of this class.</p>
+<p>But I digress. (Then again, you're the curious one - not me.)</p>
+<p>So let's analyze the second line of our 'identity' function above:</p>
+<div class="highlight">
+<pre>    <span class="nv">val</span>
+</pre>
+</div>
+<p>Let's see. It's the last line of a non-void function, so it means it's returned. 'val' refers to a variable declaration which happens to be a function argument, of a generic type. (<em>phew</em> - at this point, repeat that last line to yourself two or three times to impreign it into your brain)</p>
+<p>So basically what our function does is... just pass through what we give it as an argument! Let's try that</p>
+<div class="highlight">
+<pre>    <span class="m-Decimal">42</span> <span class="nf">toString</span><span class="p">()</span> <span class="nf">println</span><span class="p">()</span> <span class="c">// just to be sure</span>
+    <span class="nf">identity</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span> <span class="nf">toString</span><span class="p">()</span> <span class="nf">println</span><span class="p">()</span> <span class="c">// still a little trivial</span>
+    <span class="nf">identity</span><span class="p">(</span><span class="nf">identity</span><span class="p">(</span><span class="nf">identity</span><span class="p">(</span><span class="nf">identity</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">))))</span> <span class="nf">toString</span><span class="p">()</span> <span class="nf">println</span><span class="p">()</span> <span class="c">// whoa.</span>
+</pre>
+</div>
+<p>Yup, it prints 42 alright.</p>
+<p>But wait! I just said above that the compiler <em>couldn't do anything useful with a generic variable</em>, that is, either use an operator on it or call a function on it, because it doesn't know its type. And in our example, we clearly see that the 'identity' function has return type T, which is a generic type! (Because it's between the &lt; and &gt;, remember?)</p>
+<p>Have I lied again? Let's find out.</p>
+</section>
+<section id="generic-type-inference" class="level2">
+<h2>Generic type inference</h2>
+<p>Let's do a little experiment:</p>
+<div class="highlight">
+<pre>    <span class="nv">a</span> <span class="o">:=</span> <span class="m-Decimal">42</span>
+    <span class="nv">b</span> <span class="o">:=</span> <span class="nf">identity</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+    <span class="s2">&quot;%s and %s&quot;</span> <span class="nf">printfln</span><span class="p">(</span><span class="nv">a</span> <span class="k">class</span> <span class="nv">name</span><span class="p">,</span> <span class="nv">b</span> <span class="k">class</span> <span class="nv">name</span><span class="p">)</span>
+</pre>
+</div>
+<p>What did you get? Int and Int, right? But - but the return type of 'identity' is T! Shouldn't b's type be T too?</p>
+<p>Well, no.</p>
+<p>And thank God for that.</p>
+<p>In fact, if it was so, generics would be pretty much useless (heh, they're limited enough already!)</p>
+<p>So what kind of magic is going on? White magic. Which really isn't magic at all.</p>
+<p>You see, when you call:</p>
+<div class="highlight">
+<pre>    <span class="nf">identity</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+</pre>
+</div>
+<p>And the definition of identity is</p>
+<div class="highlight">
+<pre>    <span class="nv">identity</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">val</span><span class="p">:</span> <span class="nc">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">T</span>
+</pre>
+</div>
+<p>Here's what the compiler figures out: well, we have one unknown type (that is, generic type), called 'T'. Also, the first (and only) argument is of that type. Hey - let's infer what 'T' is from the type of this argument!</p>
+<p>And that's exactly what it does. As a result, it figures the type of b to be Int - since we can know all that at compile-time. It makes b easier to use, avoid tons of cast, and is good for your karma.</p>
+<p>Here's another example.</p>
+<div class="highlight">
+<pre>    <span class="nv">printTypeName</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nc">T</span><span class="p">:</span> <span class="nc">Class</span><span class="p">)</span> <span class="p">{</span> <span class="nc">T</span> <span class="nv">name</span> <span class="nf">println</span><span class="p">()</span> <span class="p">}</span>
+    <span class="nf">printTypeName</span><span class="p">(</span><span class="nc">Object</span><span class="p">)</span>
+</pre>
+</div>
+<p>Then it prints &quot;Object&quot;. Did we find a way to print strings without having to enclose them between quotes? Hopefully not. That would be messy, man. Talk about Perl :/</p>
+<p>However, we have just discovered that we can pass types as arguments to functions. Of course, because types are just instances of 'Class', right? So they're objects. So they're values. So we can pass them around.</p>
+<p>So here, the compiler figures that, well - we give it the solution to 'what is T'. It is then not too big a challenge for the compiler to go from here.</p>
+<p>Then again, we could have done:</p>
+<div class="highlight">
+<pre>    <span class="nv">dumbPrintTypeName</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nc">T</span><span class="p">:</span> <span class="nc">Class</span><span class="p">)</span> <span class="p">{</span> <span class="nc">T</span> <span class="nv">name</span> <span class="nf">println</span><span class="p">()</span> <span class="p">}</span>
+    <span class="nf">dumbPrintTypeName</span><span class="p">(</span><span class="nc">Object</span><span class="p">)</span>
+</pre>
+</div>
+<p>Since we don't use T as a type anywhere. So why even bother with this &lt;T&gt; thing, hmm? Why does the compiler even allow it? Read on if you want to find out.</p>
+</section>
+<section id="generic-return-types" class="level2">
+<h2>Generic return types</h2>
+<p>Here's a little riddle for you. How does the compiler figure out the real return type of this function:</p>
+<div class="highlight">
+<pre>    <span class="nv">sackOfUnknown</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="nc">T</span> <span class="p">{</span> <span class="m-Decimal">42</span> <span class="p">}</span>
+    <span class="nf">sackOfUnknown</span><span class="p">()</span>
+</pre>
+</div>
+<p>Anyone? Ah, I see a hand in the back. What do you say? The type of the return expression? WRONG. But that was an honest try. One point for effort.</p>
+<p>So what's the solution? &quot;It doesn't.&quot; That's right. The compiler doesn't even bother. We give absolutely no clue as to the type of T when we're calling it - and the compiler never tries to infer a generic type from the return expression (that's useless, I mean - why even make a generic function in the first place? Too lazy to type out 'Int'? Yeah. Call me back when you have ABI incompatibilities because you changed a return expression. Or rather - don't.)</p>
+<p>So how do we make a function that</p>
+<ul>
+<li>has a generic return type, let's say 'T'</li>
+<li>doesn't take an argument of type T ?</li>
+</ul>
+<p>Well, that's precisely where that useless thing presented in the previous section comes in very handy:</p>
+<div class="highlight">
+<pre>    <span class="nv">theAnswer</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">(</span><span class="nc">T</span><span class="p">:</span> <span class="nc">Class</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">T</span> <span class="p">{</span>
+        <span class="nv">match</span> <span class="nc">T</span> <span class="p">{</span>
+            <span class="k">case</span> <span class="nc">Int</span>    <span class="o">=&gt;</span> <span class="m-Decimal">42</span>
+            <span class="k">case</span> <span class="nc">Float</span>  <span class="o">=&gt;</span> <span class="m-Decimal">42</span><span class="p">.</span><span class="m-Decimal">0</span>
+            <span class="k">case</span> <span class="nc">String</span> <span class="o">=&gt;</span> <span class="s2">&quot;forty-two&quot;</span>
+            <span class="k">case</span>        <span class="o">=&gt;</span> <span class="nc">Exception</span> <span class="k">new</span><span class="p">(</span><span class="s2">&quot;You&#39;re not worthy.&quot;</span><span class="p">)</span> <span class="nf">throw</span><span class="p">();</span> <span class="m-Decimal">0</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+   <span class="nv">rational</span> <span class="o">:=</span> <span class="nf">theAnswer</span><span class="p">(</span><span class="nc">Int</span><span class="p">)</span>
+   <span class="nv">real</span>     <span class="o">:=</span> <span class="nf">theAnswer</span><span class="p">(</span><span class="nc">Float</span><span class="p">)</span>
+   <span class="nv">text</span>     <span class="o">:=</span> <span class="nf">theAnswer</span><span class="p">(</span><span class="nc">String</span><span class="p">)</span>
+   <span class="nf">theAnswer</span><span class="p">(</span><span class="nc">Object</span><span class="p">)</span> <span class="c">// ka-boom!</span>
+</pre>
+</div>
+<p>What just happened? We used a match on 'T', which means we're comparing it. We're comparing it with the types 'Int', 'Float', 'String', trying to return expressions. And if it's none of these types, it just blows up.</p>
+<p>Note: in that case, our theAnswer function is pretty useless</p>
+</section>
+<section id="generic-classes" class="level2">
+<h2>Generic classes</h2>
+<p>Now that's all good and fancy - but generic functions aren't actually that useful. If we can't use operators nor functions on generic types, what can we do? Well - store them! That's the way all collections work.</p>
+<p>Let's start with a simple one:</p>
+<div class="highlight">
+<pre>    <span class="nc">Slot</span><span class="p">:</span> <span class="k">class</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nv">element</span><span class="p">:</span> <span class="nc">T</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">.</span><span class="nf">element</span><span class="p">)</span> <span class="p">{</span> <span class="nf">set</span><span class="p">(</span><span class="nv">element</span><span class="p">)</span> <span class="p">}</span>
+        <span class="nv">set</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">element</span><span class="p">)</span> <span class="p">{}</span>
+        <span class="nv">get</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">T</span> <span class="p">{</span> <span class="nv">element</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nv">s</span> <span class="o">:=</span> <span class="nc">Slot</span> <span class="k">new</span><span class="p">(</span><span class="mf">3.14</span><span class="p">)</span>
+    <span class="nv">s</span> <span class="nf">get</span><span class="p">()</span> <span class="nf">toString</span><span class="p">()</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="nv">s</span> <span class="nc">T</span> <span class="nv">name</span> <span class="nf">println</span><span class="p">()</span>
+</pre>
+</div>
+<p>Not that bad, eh? (It should print 3.14 and Float - or some other type, if you're in the future and ooc has a proper number tower)</p>
+<p>But wait - get is defined like that:</p>
+<div class="highlight">
+<pre>    <span class="nv">get</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">T</span> <span class="p">{</span> <span class="nv">element</span> <span class="p">}</span>
+</pre>
+</div>
+<p>And clearly T is a generic type, ie. it could be anything at runtime, and <em>yet</em> the compiler figures it out right.</p>
+<p>So what happens here? Let's look at the call, since it's the info from which the compiler works to infer generic types:</p>
+<div class="highlight">
+<pre>    <span class="nv">s</span> <span class="nf">get</span><span class="p">()</span>
+</pre>
+</div>
+<p>Hmmph. Not many types there - except maybe.. the type of s. Which is what exactly?</p>
+<div class="highlight">
+<pre>    <span class="nv">s</span> <span class="o">:=</span> <span class="nc">Slot</span> <span class="k">new</span><span class="p">(</span><span class="mf">3.14</span><span class="p">)</span>
+</pre>
+</div>
+<p>Well it turns out that Slot new is just a regular method call, the generic type T is inferred to 'Float', and so 's' becomes a Slot&lt;Float&gt;</p>
+<p>Hence, the compiler sees the get() call as:</p>
+<div class="highlight">
+<pre>    <span class="nc">Slot</span><span class="o">&lt;</span><span class="nc">Float</span><span class="o">&gt;</span> <span class="nf">get</span><span class="p">()</span>
+</pre>
+</div>
+<p>And it sees the get definition as</p>
+<div class="highlight">
+<pre>    <span class="nc">Sloat</span><span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="nv">get</span><span class="p">:</span> <span class="k">func</span> <span class="p">{}</span>
+</pre>
+</div>
+<p>From here, inferring that T = Float is trivial.</p>
+</section>
+<section id="advanced-type-inference" class="level2">
+<h2>Advanced type inference</h2>
+<p>One of the most advanced example of type inference in the whole SDK is probably the List map() function. Here is its signature (ie. definition without the body) :</p>
+<div class="highlight">
+<pre>    <span class="nv">map</span><span class="p">:</span> <span class="k">func</span> <span class="o">&lt;</span><span class="nc">K</span><span class="o">&gt;</span> <span class="p">(</span><span class="nv">f</span><span class="p">:</span> <span class="nc">Func</span> <span class="p">(</span><span class="nc">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">This</span><span class="o">&lt;</span><span class="nc">K</span><span class="o">&gt;</span>
+</pre>
+</div>
+<p>So basically it turns a List&lt;T&gt; into a List&lt;K&gt;, by calling f to turn every T into a K. Makes sense.</p>
+<p>The question is now - how does the compiler infer K? The only info we have about it, is that it's the return type of function we pass as an argument to the function.</p>
+<p>Well - no big deal then, if we do:</p>
+<div class="highlight">
+<pre>    <span class="nv">intToString</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">i</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">String</span> <span class="p">{</span> <span class="nv">i</span> <span class="nf">toString</span><span class="p">()</span> <span class="p">}</span>
+    <span class="nv">strings</span> <span class="o">:=</span> <span class="nv">numbers</span> <span class="nf">map</span><span class="p">(</span><span class="nv">intToString</span><span class="p">)</span>
+</pre>
+</div>
+<p>Then we know that K = String from the definition of intToString.</p>
+<p>But wait, there's a nice infers-everything syntax for closures, ie.:</p>
+<div class="highlight">
+<pre>    <span class="nv">stringsToo</span> <span class="o">:=</span> <span class="nv">numbers</span> <span class="nf">map</span><span class="p">(</span><span class="o">|</span><span class="nv">x</span><span class="o">|</span> <span class="nv">x</span> <span class="nf">toString</span><span class="p">())</span>
+</pre>
+</div>
+<p>And here, we're doomed. The closure insides attempts to infers its whole signature (argument types, return type, etc.) from the type of the corresponding argmuent in the map definition. But map doesn't provide a definitive answer, since the return type is generic.</p>
+<p>Hence, the compiler falls back to the only possible resolution of this madness: it infers K from the return expression inside the closure.</p>
+<p>This case is the <em>only case</em> where rock considers the return expression inside functions to infer any type at all.</p>
+</section>
+<section id="under-the-hood" class="level2">
+<h2>Under the hood</h2>
+<p>How does it work under the hood?</p>
+<p>Here is the naive implementation: generic type arguments as passed as function arguments, ie a call to:</p>
+<div class="highlight">
+<pre>    <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span> <span class="k">new</span><span class="p">()</span>
+    <span class="nf">identity</span><span class="p">(</span><span class="m-Decimal">42</span><span class="p">)</span>
+</pre>
+</div>
+<p>becomes (without mangling):</p>
+<div class="highlight">
+<pre>    <span class="nc">ArrayList_new</span><span class="p">(</span><span class="nc">Int_class</span><span class="p">());</span>
+    <span class="nf">identity</span><span class="p">()</span>
+</pre>
+</div>
+<p>Type arguments in classes become variables:</p>
+<div class="highlight">
+<pre>    <span class="nc">ArrayList</span><span class="p">:</span> <span class="k">class</span> <span class="o">&lt;</span><span class="nc">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+</pre>
+</div>
+<p>is</p>
+<div class="highlight">
+<pre>    <span class="nc">ArrayList</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nc">T</span><span class="p">:</span> <span class="nc">Class</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Class type arguments are assigned in the constructor to the appropriate values.</p>
+</section>
+</section>
+<section id="properties" class="level1">
+<h1>Properties</h1>
+<section id="intro-3" class="level2">
+<h2>Intro</h2>
+<p>Properties are a handy way to get rid of getters and setters while retaining their advantages.</p>
+<p>The justification for getters and setters, beyond relieving feelings of guilt for not being able to correctly apply object-oriented principles such as encapsulation, is to allow for computation to happen when a value is retrieved and/or set (besides the actual memory read/write).</p>
+<p>However, this results in long-winded and hard-on-the-eyes code such as this:</p>
+<div class="highlight">
+<pre>    <span class="nf">setX</span><span class="p">(</span><span class="nf">getX</span><span class="p">()</span> <span class="o">+</span> <span class="m-Decimal">1</span><span class="p">)</span>
+    <span class="nf">setY</span><span class="p">(</span><span class="nf">getY</span><span class="p">()</span> <span class="o">+</span> <span class="m-Decimal">2</span><span class="p">)</span>
+    <span class="nf">setZ</span><span class="p">(</span><span class="nf">getZ</span><span class="p">()</span> <span class="o">+</span> <span class="m-Decimal">3</span><span class="p">)</span>
+</pre>
+</div>
+<p>When one come simply write, with regular variables</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">,</span> <span class="nv">z</span><span class="p">)</span> <span class="o">+=</span> <span class="p">(</span><span class="m-Decimal">1</span><span class="p">,</span> <span class="m-Decimal">2</span><span class="p">,</span> <span class="m-Decimal">3</span><span class="p">)</span>
+</pre>
+</div>
+<p>Which is much easier on the eyes. (Read on 'tuples' for more information about multi-declaration / multi-assignment)</p>
+</section>
+<section id="a-dumb-property" class="level2">
+<h2>A dumb property</h2>
+<p>Turning a regular variable declaration into a property is as simple as adding { get set } after it.</p>
+<div class="highlight">
+<pre>    <span class="nc">Tree</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">age</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span> <span class="nv">get</span> <span class="nv">set</span> <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>At this point, 'age' behaves exactly as a variable, except that instead of direct memory read/write, it's now modified via automatically-generated getters and setters.</p>
+<p>The above code is equivalent to, if you prefer:</p>
+<div class="highlight">
+<pre>    <span class="nc">Tree</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">age</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
+            <span class="nv">get</span>
+            <span class="nv">set</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+</section>
+<section id="hooking-on-get-and-set" class="level2">
+<h2>Hooking on get and set</h2>
+<p>There's more to it. get and set can have a body, much like methods, except without specifying argument types or return types.</p>
+<div class="highlight">
+<pre>    <span class="nc">Tree</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">age</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
+            <span class="nv">get</span>
+            <span class="nf">set</span> <span class="p">(</span><span class="nv">newAge</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="nv">newAge</span> <span class="o">&gt;</span> <span class="m-Decimal">0</span><span class="p">)</span> <span class="nv">age</span> <span class="o">=</span> <span class="nv">newAge</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>In this example, validation is done within the property setter. It could be used to validate state transitions for a finite state machine, for example.</p>
+</section>
+<section id="virtual-properties" class="level2">
+<h2>Virtual properties</h2>
+<p>In the previous sections, we thought of properties as 'variable declarations on steroids'. This is not exactly true. A property can exist without any variable of the same name existing.</p>
+<p>For our tree class, we might define an 'old' property that is computed from its 'age' property.</p>
+<div class="highlight">
+<pre>    <span class="nv">old</span><span class="p">:</span> <span class="nc">Bool</span> <span class="p">{</span>
+        <span class="nv">get</span> <span class="p">{</span>
+            <span class="nv">age</span> <span class="o">&gt;</span> <span class="m-Decimal">100</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>NOTE: using undocumented 'magic numbers' in code is bad practice: don't do it. Use constants with meaningful names instead - or better yet, make it configurable.</p>
+<p>Here, there is no real variable named 'old' that can be modified. Only a read-only property that is computed on-demand. Note that virtual properties can have setters too.</p>
+<p>Which leads us to the following definition: virtual properties are properties with custom getters and setters that don't reference the name of the property.</p>
+<p>In our case, when we define get, we don't access 'old', which makes it a virtual property.</p>
+</section>
+<section id="foreign-function-interfacing" class="level2">
+<h2>Foreign function interfacing</h2>
+<p>Properties setters and getters can be extern functions (ie. functions defined outside ooc code). Let's take an example for a well-known GTK widget:</p>
+<div class="highlight">
+<pre>    <span class="k">use</span> <span class="nv">gtk</span>
+    <span class="k">import</span> <span class="nv">gtk</span><span class="o">/</span><span class="p">[</span><span class="nc">Gtk</span><span class="p">,</span> <span class="nc">Widget</span><span class="p">]</span>
+
+    <span class="nc">Label</span><span class="p">:</span> <span class="k">cover</span> <span class="k">from</span> <span class="nc">GtkLabel*</span> <span class="k">extends</span> <span class="nc">Widget</span> <span class="p">{</span>
+        <span class="k">new</span><span class="p">:</span> <span class="k">extern</span><span class="p">(</span><span class="nv">gtk_label_new</span><span class="p">)</span> <span class="k">static</span> <span class="k">func</span> <span class="p">(</span><span class="nv">text</span><span class="p">:</span> <span class="no">GC</span><span class="nv">har</span><span class="o">*</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">This</span>
+
+        <span class="nv">text</span><span class="p">:</span> <span class="no">GC</span><span class="nv">har</span><span class="o">*</span> <span class="p">{</span>
+            <span class="nv">set</span><span class="p">:</span> <span class="k">extern</span><span class="p">(</span><span class="nv">gtk_label_set_text</span><span class="p">)</span>
+            <span class="nv">get</span><span class="p">:</span> <span class="k">extern</span><span class="p">(</span><span class="nv">gtk_label_get_text</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Once again, properties make code more readable and more straight-forward to write.</p>
+</section>
+</section>
+<section id="tuples" class="level1">
+<h1>Tuples</h1>
+<section id="intro-4" class="level2">
+<h2>Intro</h2>
+<p>This section is rather long, and begins with an explanation of the practical problem multi-return is supposed to solve.</p>
+<p>If you're just looking for reference material, you may jump directly to the 'Multi-return using Tuples' section.</p>
+<p>Also, don't miss the last section on multi-variable declaration and assignment.</p>
+</section>
+<section id="the-problem" class="level2">
+<h2>The problem</h2>
+<p>How do we make a function that return several values?</p>
+<section id="using-an-array---minmax" class="level3">
+<h3>Using an array - minmax</h3>
+<p>You can use an array:</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">minmax</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">list</span><span class="p">:</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Int[]</span> <span class="p">{</span>
+        <span class="nv">min</span> <span class="o">:=</span> <span class="no">INT_MAX</span>
+        <span class="nv">max</span> <span class="o">:=</span> <span class="no">INT_MIN</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">i</span> <span class="k">in</span> <span class="nv">list</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&lt;</span> <span class="nv">min</span><span class="p">)</span> <span class="nv">min</span> <span class="o">=</span> <span class="nv">i</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&gt;</span> <span class="nv">max</span><span class="p">)</span> <span class="nv">max</span> <span class="o">=</span> <span class="nv">i</span>
+        <span class="p">}</span>
+
+        <span class="p">[</span><span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">]</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>But it's not practical, ie. if you want to retrieve min and max, you have to do:</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">result</span> <span class="o">:=</span> <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">)</span>
+    <span class="nv">min</span> <span class="o">:=</span> <span class="nv">result</span><span class="p">[</span><span class="m-Decimal">0</span><span class="p">]</span>
+    <span class="nv">max</span> <span class="o">:=</span> <span class="nv">result</span><span class="p">[</span><span class="m-Decimal">1</span><span class="p">]</span>
+</pre>
+</div>
+<p>We're using three lines only to retrieve results from a function.</p>
+<p>And what if minmax is changed to return only one value? The code will still compile but fail on result[1].</p>
+</section>
+<section id="using-a-list-of-cells-ie.-a-bag" class="level3">
+<h3>Using a list of cells (ie. a Bag)</h3>
+<p>Using an array doesn't allow different types, so</p>
+<p>Let's try using a list of cells:</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">meanAndTotal</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">units</span><span class="p">:</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Unit</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Cell</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nv">total</span> <span class="o">:=</span> <span class="m-Decimal">0</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">unit</span> <span class="k">in</span> <span class="nv">units</span><span class="p">)</span> <span class="nv">total</span> <span class="o">+=</span> <span class="nv">unit</span> <span class="nv">weight</span>
+        <span class="nv">mean</span> <span class="o">:=</span> <span class="nv">total</span> <span class="o">/</span> <span class="nv">units</span> <span class="nf">size</span><span class="p">()</span> <span class="k">as</span> <span class="nc">Float</span>
+
+        <span class="p">[</span><span class="nc">Cell</span> <span class="k">new</span><span class="p">(</span><span class="nv">total</span><span class="p">),</span> <span class="nc">Cell</span> <span class="k">new</span><span class="p">(</span><span class="nv">mean</span><span class="p">)]</span> <span class="k">as</span> <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Cell</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>And to retrieve the values:</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">result</span> <span class="o">:=</span> <span class="nf">meanAndTotal</span><span class="p">(</span><span class="nv">units</span><span class="p">)</span>
+    <span class="nv">total</span>  <span class="o">:=</span> <span class="nv">result</span><span class="p">[</span><span class="m-Decimal">0</span><span class="p">]</span> <span class="nf">get</span><span class="p">(</span><span class="nc">Int</span><span class="p">)</span>
+    <span class="nv">mean</span>   <span class="o">:=</span> <span class="nv">result</span><span class="p">[</span><span class="m-Decimal">1</span><span class="p">]</span> <span class="nf">get</span><span class="p">(</span><span class="nc">Float</span><span class="p">)</span>
+</pre>
+</div>
+<p>Again, three lines, looks even uglier, no guarantees, not type-safe at compile-time. Don't do that.</p>
+</section>
+<section id="using-references" class="level3">
+<h3>Using references</h3>
+<p>And here's the closest we'll come to a tolerable solution without using tuples: out-parameters. Let's rewrite the minmax example with it</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">minmax</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">list</span><span class="p">:</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span><span class="p">,</span> <span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">:</span> <span class="nc">Int@</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">min</span> <span class="o">=</span> <span class="no">INT_MAX</span>
+        <span class="nv">max</span> <span class="o">=</span> <span class="no">INT_MIN</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">i</span> <span class="k">in</span> <span class="nv">list</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&lt;</span> <span class="nv">min</span><span class="p">)</span> <span class="nv">min</span> <span class="o">=</span> <span class="nv">i</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&gt;</span> <span class="nv">max</span><span class="p">)</span> <span class="nv">max</span> <span class="o">=</span> <span class="nv">i</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>And to retrieve the values:</p>
+<div class="highlight">
+<pre>    <span class="c">// counter-example: don&#39;t do that</span>
+    <span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">:</span> <span class="nc">Int</span>
+    <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">,</span> <span class="nv">min</span><span class="o">&amp;</span><span class="p">,</span> <span class="nv">max</span><span class="o">&amp;</span><span class="p">)</span>
+</pre>
+</div>
+<p>Two lines is better, but what if we do:</p>
+<div class="highlight">
+<pre>    <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">,</span> <span class="k">null</span><span class="p">,</span> <span class="k">null</span><span class="p">)</span>
+</pre>
+</div>
+<p>That's valid ooc, won't be caught at compile-time, and yet crash. So it's not the perfect solution we're looking for.</p>
+</section>
+</section>
+<section id="multi-return-using-tuples---the-solution" class="level2">
+<h2>Multi-return using tuples - the solution</h2>
+<section id="multiple-return-types" class="level3">
+<h3>Multiple return types</h3>
+<p>Tuples can be used to return multiple values from a function. Let's rewrite our minmax function using that.</p>
+<div class="highlight">
+<pre>    <span class="nv">minmax</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="nv">list</span><span class="p">:</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Int</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nc">Int</span><span class="p">,</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">)</span> <span class="o">:=</span> <span class="p">(</span><span class="no">INT_MAX</span><span class="p">,</span> <span class="no">INT_MIN</span><span class="p">)</span>
+        <span class="nv">list</span> <span class="nf">each</span><span class="p">(</span><span class="o">|</span><span class="nv">i</span><span class="o">|</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&lt;</span> <span class="nv">min</span><span class="p">)</span> <span class="nv">min</span> <span class="o">=</span> <span class="nv">i</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">i</span> <span class="o">&gt;</span> <span class="nv">max</span><span class="p">)</span> <span class="nv">max</span> <span class="o">=</span> <span class="nv">i</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">)</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>The returned tuple and the declared function return type must match exactly (e.g. same number and types of elements). Any mismatch will result in a compile error.</p>
+</section>
+<section id="retrieving-all-values---multi-variable-declaration" class="level3">
+<h3>Retrieving all values - multi-variable declaration</h3>
+<p>We can retrieve all values by using a decl-assign with a tuple on the left and a function call on the right</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="nv">min</span><span class="p">,</span> <span class="nv">max</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">)</span>
+</pre>
+</div>
+<p>The tuple and the return type of the function call must match exactly (same numbers of elements). Any mismatch will result in a compile error.</p>
+<p>The tuple should only contain variable accesses - any other expression will result in a compile error.</p>
+<p>The type of the variables declared inside the tuples are inferred from the return type of the called function, just like regular decl-assign.</p>
+<p>There are ways to ignore some values, that are described in other sections.</p>
+</section>
+<section id="ignoring-all-but-the-first-value" class="level3">
+<h3>Ignoring all but the first value</h3>
+<p>In the minmax example above, we can retrieve only min if we want:</p>
+<div class="highlight">
+<pre>    <span class="nv">min</span> <span class="o">:=</span> <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">)</span>
+</pre>
+</div>
+<p>It can even be used as an expression:</p>
+<div class="highlight">
+<pre>    <span class="s2">&quot;Minimum is %d&quot;</span> <span class="nf">printfln</span><span class="p">(</span><span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">))</span>
+</pre>
+</div>
+<p>Which leads to this rule: <strong>when a function returning multiple values is used as if it returned only one, the first value is used.</strong></p>
+</section>
+<section id="ignoring-specific-values---the-_-wildcard" class="level3">
+<h3>Ignoring specific values - the '_' wildcard ###</h3>
+<p>What if we want only max? We can use '_' in place of a name, in a multi-variable declaration:</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="m-Decimal">_</span><span class="p">,</span> <span class="nv">max</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">minmax</span><span class="p">(</span><span class="nv">mylist</span><span class="p">)</span>
+</pre>
+</div>
+<p>However, there is no way to use it as an expression, it has to be unwrapped first, with a multi-variable declaration.</p>
+<p>For that reason, <strong>it's good design to declare return values from most interesting to least interesting</strong>.</p>
+</section>
+<section id="the-importance-of-return-values-order" class="level3">
+<h3>The importance of return values order</h3>
+<p>Take for example Process getOutput() in the sdk:</p>
+<div class="highlight">
+<pre>    <span class="nv">getOutput</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nc">String</span><span class="p">,</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{}</span>
+</pre>
+</div>
+<p>The first returned value is what the process wrote to stdout, and the second value is the exit code of the process.</p>
+<p>The function used to be declared like that</p>
+<div class="highlight">
+<pre>    <span class="nv">getOutput</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="nc">String</span> <span class="p">{}</span>
+</pre>
+</div>
+<p>And didn't allow to get the exit code. Adding functionality didn't hurt compatibility at all though - no code broke, because of careful design.</p>
+<p>Be careful when designing APIs. Plan for growth. Listen to Guy Steele (and his 'Growing a Language' talk)</p>
+</section>
+<section id="the-_-wildcard-in-greedy-mode" class="level3">
+<h3>The '_' wildcard in greedy mode ###</h3>
+<p>We said above that the tuple and the return type of the function call on either side of a multi-variable decl-assign should match exactly.</p>
+<p>For example, given this:</p>
+<div class="highlight">
+<pre>    <span class="nv">plainWhite</span><span class="p">:</span> <span class="k">func</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nc">Int</span><span class="p">,</span> <span class="nc">Int</span><span class="p">,</span> <span class="nc">Int</span><span class="p">,</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span> <span class="p">(</span><span class="m-Decimal">1</span><span class="p">,</span> <span class="m-Decimal">2</span><span class="p">,</span> <span class="m-Decimal">3</span><span class="p">,</span> <span class="m-Decimal">4</span><span class="p">)</span> <span class="p">}</span>
+</pre>
+</div>
+<p>The following lines are invalid:</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="nv">one</span><span class="p">,</span> <span class="nv">two</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span>
+    <span class="p">(</span><span class="m-Decimal">_</span><span class="p">,</span> <span class="nv">two</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span>
+</pre>
+</div>
+<p>Why? So that when incompatible changes are made to an API, you're aware of it at compile-time, not at run-time.</p>
+<p>However, both these lines are valid:</p>
+<div class="highlight">
+<pre>    <span class="nv">one</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span> <span class="c">// as we&#39;ve seen before</span>
+    <span class="p">(</span><span class="m-Decimal">_</span><span class="p">,</span> <span class="nv">two</span><span class="p">,</span> <span class="m-Decimal">_</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span>
+</pre>
+</div>
+<p>Although plainWhite() returns 4 values, a tuple with only 3 elements works.</p>
+<p>**A '_' used at the end of a tuple will ignore every remaining return value**</p>
+<p>So that</p>
+<div class="highlight">
+<pre>    <span class="nv">one</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span>
+</pre>
+</div>
+<p>Is actually equivalent to:</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="nv">one</span><span class="p">,</span> <span class="m-Decimal">_</span><span class="p">)</span> <span class="o">:=</span> <span class="nf">plainWhite</span><span class="p">()</span>
+</pre>
+</div>
+</section>
+</section>
+<section id="tuples-beyond-return---multi-declaration-and-multi-assign" class="level2">
+<h2>Tuples beyond return - multi-declaration and multi-assign</h2>
+<p>Using tuples on both sides of the decl-assign operator (:=) or the assign operator (=) is valid.</p>
+<p>Examples:</p>
+<div class="highlight">
+<pre>    <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">,</span> <span class="nv">z</span><span class="p">)</span> <span class="o">:=</span> <span class="p">(</span><span class="m-Decimal">1</span><span class="p">,</span> <span class="m-Decimal">2</span><span class="p">,</span> <span class="m-Decimal">3</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">b</span><span class="p">,</span> <span class="nv">a</span><span class="p">)</span>
+</pre>
+</div>
+<p>Swapping variables is valid, and should be supported by compliant ooc compilers/runtimes.</p>
+</section>
+</section>
+<section id="version-blocks" class="level1">
+<h1>Version blocks</h1>
+<section id="syntax" class="level2">
+<h2>Syntax</h2>
+<p>Version blocks use the following syntax:</p>
+<div class="highlight">
+<pre>    <span class="k">version</span> <span class="p">(</span><span class="o">&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">&lt;</span><span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="o">&lt;</span><span class="nv">alternative</span> <span class="nv">body</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>Where <version expression> can be any of:</p>
+<div class="highlight">
+<pre>    <span class="o">&lt;</span><span class="k">version</span> <span class="nv">name</span><span class="o">&gt;</span>
+    <span class="o">!&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span> <span class="o">&amp;&amp;</span> <span class="o">&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span> <span class="o">||</span> <span class="o">&lt;</span><span class="k">version</span> <span class="nv">expression</span><span class="o">&gt;</span>
+</pre>
+</div>
+</section>
+<section id="semantics" class="level2">
+<h2>Semantics</h2>
+<p>Version blocks aren't if-else blocks - they aren't evaluated at runtime. In rock, version blocks aren't evaluated at ooc-compile-time either. They're evaluated at C compile time. Which means the C code generated by rock should be the same on any platform.</p>
+<p>Practically, in rock, version blocks are an abstraction for #ifdef / #endif blocks. The syntax makes it harder to forget to close a version block than an #ifdef / #endif block, and a few handy aliases (listed below) for commonly used version names are standard, so that developers don't have to remember the convoluted corresponding C defines.</p>
+<p>For other compilers not based on the C language, version block handling may happen at any stage of the compilation (if any), as long as the version expressions are correctly evaluated and have the correct meaning (for example, a 'windows' version block should be ignored on OSX)</p>
+</section>
+<section id="built-in-version-names" class="level2">
+<h2>Built-in version names</h2>
+<p>C defines are included here for completeness, but are only relevant for people who want to implement ooc on top of C.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Name</th>
+<th style="text-align: center;">corresponding C define</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">windows</td>
+<td style="text-align: center;"><strong>WIN32</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">linux</td>
+<td style="text-align: center;"><strong>linux</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">solaris</td>
+<td style="text-align: center;">__sun | |unix |<strong>unix</strong> | |beos |<strong>BEOS</strong> | |haiku |<strong>HAIKU</strong> | |apple |<strong>APPLE</strong> | |gnuc |<strong>GNUC</strong> | |i386 |<strong>i386</strong> | |x86 |<strong>X86</strong> | |x86_64 |<strong>x86_64</strong> | |ppc |<strong>ppc</strong> | |ppc64 |<strong>ppc64</strong> | |64 |<strong>x86_64</strong> || <strong>ppc64</strong>| |gc |<strong>OOC_USE_GC</strong> |</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="custom-version-names" class="level2">
+<h2>Custom version names</h2>
+<p>Most of the standard version names above depend on your building environment, and the 'gc' name depends on the compiler setting -gc=[off,static,dynamic].</p>
+<p>Custom version names can be used, and turned on/off with the -D and -U compiler flags, for example:</p>
+<div class="highlight">
+<pre>    <span class="k">version</span><span class="p">(</span><span class="nv">debug</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;[%d] Saving database %s&quot;</span> <span class="nf">println</span><span class="p">(</span><span class="nf">timestamp</span><span class="p">(),</span> <span class="nv">db</span> <span class="nv">name</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nv">db</span> <span class="nf">save</span><span class="p">()</span>
+</pre>
+</div>
+<p>The code inside the version(debug) block will be compiled if -Ddebug is used. It is common practise for ooc developers to use the -Ddebug switch to debug their applications.</p>
+</section>
+<section id="semantics-continued" class="level2">
+<h2>Semantics continued</h2>
+<p>Version blocks can be used in function bodies, to make certain parts of the code OS-specific, or they can be used at the mdule-level to make functions or types OS-specific.</p>
+<p>If different types are defined in different version blocks, make sure they expose the same interface. It's not necessary for them to have the exact same class layout, but they should at least have all the methods/fields that are used in every OS.</p>
+</section>
+<section id="examples" class="level2">
+<h2>Examples</h2>
+<div class="highlight">
+<pre>    <span class="k">version</span><span class="p">(</span><span class="nv">windows</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;Hi, Bill!&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">version</span><span class="p">(</span><span class="nv">apple</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;Hi, Steve!&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">version</span><span class="p">(</span><span class="nv">linux</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;Hi, Linus!&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">version</span><span class="p">(</span><span class="o">!</span><span class="nv">windows</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nv">apple</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nv">linux</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;Who are you, and what did you do to my OS?&quot;</span>
+    <span class="p">}</span>
+
+    <span class="k">version</span><span class="p">(</span><span class="nv">apple</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s2">&quot;Nice Hardware!&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="s2">&quot;So you like your computer made of plastic then!&quot;</span> <span class="nf">println</span><span class="p">()</span>
+    <span class="p">}</span>
+</pre>
+</div>
+<p>See also io/File and os/Time in the SDK for real-world examples of heavily versioned code.</p>
+</section>
+<section id="pattern-for-os-specific-classes" class="level2">
+<h2>Pattern for OS-specific classes</h2>
+<p>In ooc, 'new' isn't a keyword but a static method. As a result, you can define new yourself. This allows an interesting pattern for OS-specific classes in ooc:</p>
+<div class="highlight">
+<pre>    <span class="c">// io/File</span>
+    <span class="k">import</span> <span class="nv">io</span><span class="o">/</span><span class="p">[</span><span class="nc">FileUnix</span><span class="p">,</span> <span class="nc">FileWin32</span><span class="p">]</span>
+    
+    <span class="nc">File</span><span class="p">:</span> <span class="k">class</span> <span class="p">{</span>
+        <span class="nv">path</span><span class="p">:</span> <span class="nc">String</span>
+    
+        <span class="k">new</span><span class="p">:</span> <span class="k">static</span> <span class="k">func</span> <span class="p">(</span><span class="o">.</span><span class="nf">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">This</span> <span class="p">{</span>
+            <span class="k">version</span><span class="p">(</span><span class="nv">windows</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nc">FileWin32</span> <span class="k">new</span><span class="p">(</span><span class="nv">path</span><span class="p">)</span> <span class="p">}</span>
+            <span class="k">version</span><span class="p">(</span><span class="nv">unix</span><span class="p">)</span>    <span class="p">{</span> <span class="k">return</span> <span class="nc">FileUnix</span>  <span class="k">new</span><span class="p">(</span><span class="nv">path</span><span class="p">)</span> <span class="p">}</span>
+            <span class="nc">Exception</span> <span class="k">new</span><span class="p">(</span><span class="nc">This</span><span class="p">,</span> <span class="s2">&quot;Unsupported platform&quot;</span><span class="p">)</span> <span class="nf">throw</span><span class="p">()</span>
+        <span class="p">}</span>
+        
+        <span class="c">// abstract methods</span>
+    <span class="p">}</span>
+
+    <span class="c">// io/FileUnix</span>
+    <span class="nc">FileUnix</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">File</span> <span class="p">{</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">path</span><span class="p">)</span> <span class="p">{}</span>
+        
+        <span class="c">// implement abstract methods for unix</span>
+    <span class="p">}</span>
+    
+    <span class="c">// io/FileWin32</span>
+    <span class="nc">FileWin32</span><span class="p">:</span> <span class="k">class</span> <span class="k">extends</span> <span class="nc">File</span> <span class="p">{</span>
+        <span class="nv">init</span><span class="p">:</span> <span class="k">func</span> <span class="p">(</span><span class="o">=</span><span class="nv">path</span><span class="p">)</span> <span class="p">{}</span>
+        
+        <span class="c">// implement abstract methods for Win32</span>
+    <span class="p">}</span>
+</pre>
+</div>
+</section>
+</section>
+<section id="use-files" class="level1">
+<h1>Use files</h1>
+<section id="intro-5" class="level2">
+<h2>Intro</h2>
+<p>Use files specify the C and ooc dependencies of a library, along with some basic info like its name, description.</p>
+<p>They are useful for package managers (see <a href="https://github.com/nddrylliog/sam">sam</a>), but also for the rock compile, to import required ooc libraries, and to know which flags and libraries to pass to the C compiler.</p>
+<p>A few well-written .use files make using libraries very easy, without having to worry about writing a Makefile of some sort, and it makes compiling programs on various platforms a no-brainer.</p>
+<p>.use files are generally located at the root of an ooc app or library.</p>
+<p>For a language binding, the tree structure is usually:</p>
+<div class="highlight">
+<pre><span class="nv">ooc</span><span class="o">-</span><span class="nv">gtk</span>
+  <span class="no">README</span><span class="o">.</span><span class="nf">md</span>
+  <span class="nv">gtk</span><span class="o">.</span><span class="nf">use</span>
+  <span class="nv">source</span>
+    <span class="nv">gtk</span>
+  <span class="nv">samples</span>
+</pre>
+</div>
+<p>For a pure ooc library or application, the tree structure is usually:</p>
+<div class="highlight">
+<pre><span class="nv">deadlogger</span>
+  <span class="no">README</span><span class="o">.</span><span class="nf">md</span>
+  <span class="nv">deadlogger</span><span class="o">.</span><span class="nf">use</span>
+  <span class="nv">source</span>
+    <span class="nv">deadlogger</span>
+  <span class="nv">samples</span>
+</pre>
+</div>
+</section>
+<section id="libs-search-path" class="level2">
+<h2>Libs search path</h2>
+<p>Using a third-party ooc library is as easy as doing <code>use library</code> in an .ooc file</p>
+<p>When doing so, the ooc compiler will look for a <code>library.use</code> file in your lib folders.</p>
+<p>The <code>$OOC_LIBS</code> environment variable defines the lib folders, separated by <code>:</code> on *nix, and ';' on Windows.</p>
+<p>A simple setup is to have all your ooc libraries sitting in the same folder, for example <code>$HOME/Dev/</code>, with the following structure:</p>
+<div class="highlight">
+<pre><span class="nv">someproject</span>
+  <span class="nv">someproject</span><span class="o">.</span><span class="nf">use</span>
+<span class="nv">ooc</span><span class="o">-</span><span class="nv">gtk</span>
+  <span class="nv">gtk</span><span class="o">.</span><span class="nf">use</span>
+<span class="nv">rock</span>
+  <span class="nv">rock</span><span class="o">.</span><span class="nf">use</span>
+  <span class="nv">sdk</span><span class="o">.</span><span class="nf">use</span>
+  <span class="nv">math</span><span class="o">.</span><span class="nf">use</span>
+  <span class="nv">pcre</span><span class="o">.</span><span class="nf">use</span>
+</pre>
+</div>
+<p>Note that the standard ooc sdk is a library like any other - it has a .use file with standard directives as defined below.</p>
+</section>
+<section id="syntax-1" class="level2">
+<h2>Syntax</h2>
+<p>The file is composed of key-value pairs, formatted like this:</p>
+<div class="highlight">
+<pre><span class="nc">Key1</span><span class="p">:</span> <span class="nc">Value1</span>
+<span class="nc">Key2</span><span class="p">:</span> <span class="nc">Value2</span>
+</pre>
+</div>
+<p>Whitespace around the colon <code>:</code> doesn't matter. For keys that accept multiple directives like <code>Libs</code> or <code>IncludePaths</code>, values should be separated by commas (and whitespace is accepted).</p>
+<p>For example, this is wrong:</p>
+<div class="highlight">
+<pre><span class="nc">Libs</span><span class="p">:</span> <span class="o">-</span><span class="nv">lGLU</span> <span class="o">-</span><span class="nv">lGL</span>
+</pre>
+</div>
+<p>And this is right:</p>
+<div class="highlight">
+<pre><span class="nc">Libs</span><span class="p">:</span> <span class="o">-</span><span class="nv">lGLU</span><span class="p">,</span> <span class="o">-</span><span class="nv">lGL</span>
+</pre>
+</div>
+</section>
+<section id="versioning" class="level2">
+<h2>Versioning</h2>
+<p>A use file might be versioned using version blocks, however, only some directives are valid in a version block.</p>
+<p>Here's an example:</p>
+<div class="highlight">
+<pre><span class="nc">Name</span><span class="p">:</span> <span class="no">SDL</span> <span class="mf">2.0</span> <span class="nc">OpenGL</span> <span class="nv">support</span>
+
+<span class="k">version</span> <span class="p">(</span><span class="nv">linux</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nc">Libs</span><span class="p">:</span> <span class="o">-</span><span class="nv">lGL</span>
+<span class="p">}</span>
+
+<span class="k">version</span> <span class="p">(</span><span class="nv">apple</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nc">Frameworks</span><span class="p">:</span> <span class="nc">Carbon</span><span class="p">,</span> <span class="nc">OpenGL</span>
+<span class="p">}</span>
+</pre>
+</div>
+<p>Version blocks have the same syntax as in .ooc files. For more details, see the version chapter.</p>
+</section>
+<section id="top-level-directives" class="level2">
+<h2>Top-level directives</h2>
+<p>Those directives cannot be versioned and must appear at the top level of a use file.</p>
+<div class="highlight">
+<pre><span class="err">#</span> <span class="nc">Short</span> <span class="nv">description</span>
+<span class="nc">Name</span><span class="p">:</span> <span class="nv">llama</span>
+
+<span class="err">#</span> <span class="nc">Longer</span> <span class="nv">description</span>
+<span class="nc">Description</span><span class="p">:</span> <span class="nc">A</span> <span class="nv">lib</span> <span class="nv">to</span> <span class="nv">deal</span> <span class="nv">with</span> <span class="nv">llamas</span>
+
+<span class="err">#</span> <span class="nc">The</span> <span class="k">version</span> <span class="nv">of</span> <span class="nv">the</span> <span class="nv">library</span>
+<span class="nc">Version</span><span class="p">:</span> <span class="mf">0.1.3</span>
+
+<span class="err">#</span> <span class="nc">Modules</span> <span class="nv">that</span> <span class="nv">are</span> <span class="nv">automatically</span> <span class="nv">imported</span> <span class="nv">when</span> <span class="err">&#39;</span><span class="k">use</span><span class="err">&#39;</span><span class="o">-</span><span class="nv">ing</span> <span class="k">this</span> <span class="nv">library</span>
+<span class="nc">Imports</span><span class="p">:</span> <span class="nv">llama</span><span class="o">/</span><span class="nv">beast</span><span class="p">,</span> <span class="nv">llama</span><span class="o">/</span><span class="nv">human</span>
+
+<span class="err">#</span> <span class="nc">For</span> <span class="nv">programs</span><span class="p">,</span> <span class="nv">the</span> <span class="nv">main</span> <span class="nv">ooc</span> <span class="nv">file</span> <span class="nv">to</span> <span class="nv">compile</span> <span class="nv">when</span> <span class="nv">rock</span> <span class="nv">is</span> <span class="nv">called</span> <span class="nv">without</span> <span class="nv">arguments</span>
+<span class="nc">Main</span><span class="p">:</span> <span class="nv">llama</span><span class="o">/</span><span class="nv">program</span>
+
+<span class="err">#</span> <span class="nc">This</span> <span class="nv">will</span> <span class="nv">be</span> <span class="nv">added</span> <span class="nv">to</span> <span class="nv">the</span> <span class="nv">list</span> <span class="nv">of</span> <span class="nv">folders</span> <span class="nv">the</span> <span class="nv">ooc</span> <span class="nv">compiler</span> <span class="nv">looks</span> <span class="k">for</span> <span class="o">.</span><span class="nf">ooc</span> <span class="nv">files</span>
+<span class="nc">SourcePath</span><span class="p">:</span> <span class="nv">source</span>
+
+<span class="err">#</span> <span class="nc">Dependencies</span> <span class="o">-</span> <span class="nv">the</span> <span class="err">&#39;</span><span class="k">use</span><span class="err">&#39;</span> <span class="nv">of</span> <span class="o">.</span><span class="nf">use</span> <span class="nv">files</span>
+<span class="nc">Requires</span><span class="p">:</span> <span class="nv">spit</span>
+</pre>
+</div>
+</section>
+<section id="basic-directives" class="level2">
+<h2>Basic directives</h2>
+<div class="highlight">
+<pre><span class="err">#</span> <span class="nv">gcc</span><span class="err">&#39;</span><span class="nv">s</span> <span class="o">-</span><span class="nc">I</span>
+<span class="nc">IncludePaths</span><span class="p">:</span> <span class="o">/</span><span class="nv">some</span><span class="o">/</span><span class="nv">weird</span><span class="o">/</span><span class="nv">place</span><span class="o">/</span><span class="k">include</span>
+
+<span class="err">#</span> <span class="nv">will</span> <span class="nv">be</span> <span class="nv">included</span> <span class="k">in</span> <span class="nv">all</span> <span class="nv">files</span> <span class="nv">using</span> <span class="k">this</span> <span class="o">.</span><span class="nf">use</span> <span class="nv">file</span>
+<span class="nc">Includes</span><span class="p">:</span> <span class="nv">someheader</span><span class="o">.</span><span class="nf">h</span><span class="p">,</span> <span class="nv">someother</span><span class="o">.</span><span class="nf">h</span>
+
+<span class="err">#</span> <span class="nv">gcc</span><span class="err">&#39;</span><span class="nv">s</span> <span class="o">-</span><span class="nc">L</span>
+<span class="nc">LibPaths</span><span class="p">:</span> <span class="o">/</span><span class="nv">some</span><span class="o">/</span><span class="nv">weird</span><span class="o">/</span><span class="nv">place</span><span class="o">/</span><span class="k">include</span>
+
+<span class="err">#</span> <span class="nv">will</span> <span class="nv">be</span> <span class="nv">linked</span> <span class="nv">with</span> <span class="nv">the</span> <span class="k">final</span> <span class="nv">executable</span>
+<span class="nc">Libs</span><span class="p">:</span> <span class="o">-</span><span class="nv">lsomething</span><span class="p">,</span> <span class="o">-</span><span class="nv">lotherthing</span>
+
+<span class="err">#</span> <span class="nv">additional</span> <span class="o">.</span><span class="nf">c</span> <span class="nv">files</span> <span class="nv">to</span> <span class="nv">compile</span> <span class="nv">and</span> <span class="nv">link</span> <span class="nv">into</span> <span class="nv">the</span> <span class="nv">library</span><span class="o">/</span><span class="nv">executable</span>
+<span class="nc">Additionals</span><span class="p">:</span> <span class="nv">source</span><span class="o">/</span><span class="nv">somefile</span><span class="o">.</span><span class="nf">c</span>
+</pre>
+</div>
+</section>
+<section id="pkg-config-packages" class="level2">
+<h2>pkg-config packages</h2>
+<p>For many packages, there is already a pkg-config <code>.pc</code> file with the information needed to make it compile right. What's more, that file is often customized depending on what system you install the library on, which makes version blocks unnecessary.</p>
+<p>Whenever a package has a pkg-config file, it is imperative to use <code>Pkgs</code> instead of specifying manually <code>IncludePaths</code>, <code>Includes</code>, <code>LibPaths</code>, and <code>Libs</code>.</p>
+<p>For example, the <code>cairo.use</code> file would probably contain:</p>
+<div class="highlight">
+<pre><span class="nc">Pkgs</span><span class="p">:</span> <span class="nv">cairo</span>
+</pre>
+</div>
+</section>
+<section id="pkg-config-like-utilities" class="level2">
+<h2>pkg-config-like utilities</h2>
+<p>Sometimes, libraries ship with pkg-config-like utilities. <code>imlib2-config</code>, <code>sdl2-config</code>, <code>llvm-config</code>. Those are often used similarly as pkg-config, except without specifying a package.</p>
+<p>When this is the case, a simple form of <code>CustomPkg</code> does the trick:</p>
+<div class="highlight">
+<pre><span class="nc">CustomPkg</span><span class="p">:</span> <span class="nv">sdl2</span><span class="o">-</span><span class="nv">config</span>
+</pre>
+</div>
+<p>However, others have more complex options. For those, the full power of <code>CustomPkg</code> is required, with 4 arguments:</p>
+<ul>
+<li>The name of the utility to run</li>
+<li>A list of arguments space-separated, always passed to the utility</li>
+<li>Equivalent to pkg-config <code>--cflags</code> option</li>
+<li>Equivalent to pkg-config <code>--libs</code> option</li>
+</ul>
+<p>For llvm-config, this boils down to:</p>
+<div class="highlight">
+<pre><span class="nc">CustomPkg</span><span class="p">:</span> <span class="nv">llvm</span><span class="o">-</span><span class="nv">config</span><span class="p">,</span> <span class="nv">core</span> <span class="nv">executionengine</span> <span class="nv">jit</span><span class="p">,</span> <span class="o">--</span><span class="nv">cflags</span><span class="p">,</span> <span class="o">--</span><span class="nv">libs</span> <span class="o">--</span><span class="nv">ldflags</span>
+</pre>
+</div>
+</section>
+<section id="custom-linkers" class="level2">
+<h2>Custom linkers</h2>
+<p>Some C++ libraries will required a C++ linker in order to work. LLVM does.</p>
+<p>Hence, the <code>Linker</code> directive:</p>
+<div class="highlight">
+<pre><span class="nc">Linker</span><span class="p">:</span> <span class="nv">g</span><span class="o">++</span>
+</pre>
+</div>
+<p>Otherwise, the ooc compiler uses the same linker as your specified C compiler.</p>
+</section>
+<section id="osx-specific-directives" class="level2">
+<h2>OSX-specific directives</h2>
+<p>OSX has some libraries packaged in <code>frameworks</code> instead of unix-y libs. For example, on OSX, <code>-lGL</code> doesn't exist. For those cases, the <code>Frameworks</code> directive can be used:</p>
+<div class="highlight">
+<pre><span class="nc">Frameworks</span><span class="p">:</span> <span class="nc">Carbon</span><span class="p">,</span> <span class="nc">OpenGL</span>
+</pre>
+</div>
+<p>This directive has no effect on other platforms, even outside version blocks.</p>
+</section>
+<section id="android-specific-directives" class="level2">
+<h2>Android-specific directives</h2>
+<p>The android build process has some intricacies, which is why .use files can contain android-specific directives:</p>
+<div class="highlight">
+<pre><span class="nc">AndroidLibs</span><span class="p">:</span> <span class="no">SDL2</span>
+<span class="nc">AndroidIncludes</span><span class="p">:</span> <span class="o">../</span><span class="no">SDL</span><span class="o">/</span>
+</pre>
+</div>
+<p>These really depend on the setup of your android project but it makes sense.</p>
+<p><code>AndroidLibs</code> are mk dependencies that need to be built, and <code>AndroidIncludes</code> are include paths, relative to the subfolder of your app/library.</p>
+<p>These directives have no effect on other platforms, even outside version blocks.</p>
+</section>
+</section>
+<a href="http://github.com/nddrylliog/the-ooc-language"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" /></a>
+<script>
+    window.onscroll = ( function()
+    {
+        return;
+        
+        var pinned = false,
+            toc    = document.getElementById( 'TOC' ),
+            offset = 200;
+        
+        return function()
+        {
+            if( !pinned && document.body.scrollTop > offset )
+            {
+                toc.className = 'pinned';
+                pinned = true;
+            }
+            else if( pinned && document.body.scrollTop < offset )
+            {
+                toc.className = '';
+                pinned = false;
+            }
+        };
+        
+    } )();
+</script>
+</body>
+</html>
